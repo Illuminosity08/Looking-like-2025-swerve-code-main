@@ -1,0 +1,51 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "IMU": {
+          "open": true
+        },
+        "Motors": {
+          "open": true
+        },
+        "Swerve Drive": {
+          "open": true
+        },
+        "open": true,
+        "swerve": {
+          "modules": {
+            "backleft": {
+              "open": true
+            },
+            "backright": {
+              "open": true
+            },
+            "frontleft": {
+              "open": true
+            },
+            "frontright": {
+              "open": true
+            },
+            "open": true
+          },
+          "open": true
+        }
+      }
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/ADXRS450_Gyro[0]": "Gyro",
+      "/SmartDashboard/Alerts": "Alerts",
+      "/SmartDashboard/Encoders": "Alerts",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/IMU": "Alerts",
+      "/SmartDashboard/JSON": "Alerts",
+      "/SmartDashboard/Motors": "Alerts",
+      "/SmartDashboard/Swerve Drive": "Alerts"
+    }
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "9212"
+  }
+}
