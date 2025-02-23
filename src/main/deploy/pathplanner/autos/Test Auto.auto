@@ -1,6 +1,5 @@
 {
-  "version": 1.0,
-  "startingPose": null,
+  "version": "2025.0",
   "command": {
     "type": "sequential",
     "data": {
@@ -8,18 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Example Path"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "New New Path"
+            "pathName": "New Path"
           }
         }
       ]
     }
   },
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": false
 }

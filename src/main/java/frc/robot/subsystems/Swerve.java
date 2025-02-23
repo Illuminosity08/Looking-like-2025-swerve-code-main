@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import java.io.File;
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
@@ -38,6 +40,7 @@ public class Swerve extends SubsystemBase {
     swerveDrive.setHeadingCorrection(false);
     swerveDrive.setCosineCompensator(false);
     // swerveDrive.setModuleEncoderAutoSynchronize(false, 1);
+    swerveDrive.resetOdometry(new Pose2d(1, 1, new Rotation2d()));
   }
 
   
@@ -61,6 +64,14 @@ public class Swerve extends SubsystemBase {
     swerveDrive.driveFieldOriented(velocity);
   }
 
+  public void resetPose(Pose2d pose) {
+    swerveDrive.resetOdometry(pose);
+  }
+
+  public Pose2d getPose() {
+    return swerveDrive.getPose();
+  }
+
   public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY,
       DoubleSupplier angularRotationX) {
     return run(() -> {
@@ -71,7 +82,7 @@ public class Swerve extends SubsystemBase {
       SmartDashboard.putNumber("DriveCommand/rot", rotation);
       SmartDashboard.putNumber("DriveCommand/translationX", translationX.getAsDouble());
       SmartDashboard.putNumber("Drivecommand/translationY", translationY.getAsDouble());
-      drive(translationCubed, rotation, false);
+      drive(translationCubed, rotation, true);
     });
   }
 }

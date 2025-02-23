@@ -6,8 +6,11 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Swerve;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -57,6 +60,15 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    // Reset rotation to face away from driver statoin
+    m_driverController.leftBumper().onTrue(Commands.runOnce(()->{
+      var currentPose = swerve.getPose();
+      Rotation2d newRotation = Rotation2d.fromDegrees(0); // blue side
+      if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
+        newRotation = Rotation2d.fromDegrees(180);
+      }
+      swerve.resetPose(new Pose2d(currentPose.getTranslation(), newRotation));
+    }));
   }
 
   /**
@@ -66,6 +78,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Commands.run(() -> {swerve.drive(new Translation2d(0.4, 0), 0.0, false);}, swerve);
+    return Commands.run(() -> {swerve.drive(new Translation2d(0.4, 0), 0.0, false);}, swerve).withTimeout(2);
   }
 }
