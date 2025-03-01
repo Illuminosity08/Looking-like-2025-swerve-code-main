@@ -5,15 +5,19 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Swerve;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -28,7 +32,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Swerve swerve = new Swerve();
-
+private final Elevator elevator = new Elevator();
+private final Joystick operatorJoystick = new Joystick(1);
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
@@ -39,12 +44,12 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-
     Command driveCommand = swerve.driveCommand(() -> -m_driverController.getLeftY(),
-        () -> -m_driverController.getLeftX(), () -> -m_driverController.getRightX());
+    () -> -m_driverController.getLeftX(), () -> -m_driverController.getRightX());
+
     swerve.setDefaultCommand(driveCommand);
   }
-  
+
   /**
    * Use this method to define your trigger->command mappings. Triggers can be
    * created via the
@@ -58,13 +63,22 @@ public class RobotContainer {
    * PS4} controllers or
    * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
+   * \[]
    */
   private void configureBindings() {
+    JoystickButton presetLow = new JoystickButton(operatorJoystick, 2); // Button 2
+    JoystickButton presetHigh = new JoystickButton(operatorJoystick, 3); // Button 3
+
+    presetLow.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(0.3))); // Move to 30 cm
+    presetHigh.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(1.2))); // Move to 120 cm
+
+
+
     // Reset rotation to face away from driver statoin
-    m_driverController.leftBumper().onTrue(Commands.runOnce(()->{
+    m_driverController.leftBumper().onTrue(Commands.runOnce(() -> {
       var currentPose = swerve.getPose();
       Rotation2d newRotation = Rotation2d.fromDegrees(0); // blue side
-      if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
+      if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
         newRotation = Rotation2d.fromDegrees(180);
       }
       swerve.resetPose(new Pose2d(currentPose.getTranslation(), newRotation));
@@ -78,6 +92,8 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Commands.run(() -> {swerve.drive(new Translation2d(0.4, 0), 0.0, false);}, swerve).withTimeout(2);
+    return Commands.run(() -> {
+      swerve.drive(new Translation2d(-0.4, 0), 0.0, false);
+    }, swerve).withTimeout(2);
   }
 }

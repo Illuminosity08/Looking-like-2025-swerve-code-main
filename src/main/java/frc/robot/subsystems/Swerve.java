@@ -78,10 +78,14 @@ public class Swerve extends SubsystemBase {
       Translation2d translationCubed = SwerveMath
           .cubeTranslation(new Translation2d(translationX.getAsDouble(), translationY.getAsDouble()));
       translationCubed = translationCubed.times(swerveDrive.getMaximumChassisVelocity());
+
       double rotation = Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumChassisAngularVelocity();
+
       SmartDashboard.putNumber("DriveCommand/rot", rotation);
       SmartDashboard.putNumber("DriveCommand/translationX", translationX.getAsDouble());
       SmartDashboard.putNumber("Drivecommand/translationY", translationY.getAsDouble());
+
+
       drive(translationCubed, rotation, true);
     });
   }
