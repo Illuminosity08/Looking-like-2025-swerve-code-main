@@ -1,0 +1,35 @@
+package frc.robot.subsystems;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+public class Intake extends SubsystemBase {
+    private final SparkMax intakeMotor;
+
+    // Motor Speeds
+    private static final double INTAKE_SPEED = 0.7;   // Adjust as needed
+    private static final double EJECT_SPEED = -0.7;  // Reverse direction for ejecting
+
+    public Intake(int motorPort) {
+        intakeMotor = new SparkMax(motorPort, MotorType.kBrushless);
+    }
+
+    public void intake() {
+        intakeMotor.set(INTAKE_SPEED);
+    }
+
+    public void eject() {
+        intakeMotor.set(EJECT_SPEED);
+    }
+
+    public void stop() {
+        intakeMotor.set(0);
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("Intake Speed", intakeMotor.get());
+    }
+}

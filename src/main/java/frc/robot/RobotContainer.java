@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -45,6 +46,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Swerve swerve = new Swerve();
 private final Elevator elevator = new Elevator();
+private final Intake intake = new Intake(5); // Change 5 to the actual CAN ID
 private final Joystick operatorJoystick = new Joystick(1);
 
   private final CommandXboxController m_driverController = new CommandXboxController(
@@ -85,7 +87,13 @@ private final Joystick operatorJoystick = new Joystick(1);
     JoystickButton presetLow = new JoystickButton(operatorJoystick, 2); // Button 2
     JoystickButton presetHigh = new JoystickButton(operatorJoystick, 3); // Button 3
     JoystickButton resetElevator = new JoystickButton(operatorJoystick, 4); // Button 4
-
+    JoystickButton intakeButton = new JoystickButton(operatorJoystick, 5); // Button 5
+    JoystickButton ejectButton = new JoystickButton(operatorJoystick, 6);  // Button 6
+    JoystickButton stopIntakeButton = new JoystickButton(operatorJoystick, 7); // Button 7
+    
+    intakeButton.whileTrue(new InstantCommand(intake::intake, intake));
+    ejectButton.whileTrue(new InstantCommand(intake::eject, intake));
+    stopIntakeButton.onTrue(new InstantCommand(intake::stop, intake));    
     presetLow.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(0.3))); // Move to 30 cm
     presetHigh.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(1.2))); // Move to 120 cm
     resetElevator.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(0.0))); // Moves to base position
