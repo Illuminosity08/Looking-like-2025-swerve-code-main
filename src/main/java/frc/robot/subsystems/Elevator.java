@@ -38,7 +38,10 @@ public class Elevator extends SubsystemBase {
         elevatorConfig.idleMode(IdleMode.kBrake);  // Holds position
         elevatorMotor.configure(elevatorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
-
+    public void moveToPosition(double position) {
+        setElevatorPosition(position);
+    }
+    
     public void setElevatorSpeed(double speed) {
         double currentHeight = elevatorEncoder.getPosition();  
 
@@ -54,5 +57,9 @@ public class Elevator extends SubsystemBase {
     public void setElevatorPosition(double targetHeight) {
         double pidOutput = pidController.calculate(elevatorEncoder.getPosition(), targetHeight);
         setElevatorSpeed(pidOutput);
+    }
+
+    public double getHeight() {
+        return elevatorEncoder.getPosition();
     }
 }
