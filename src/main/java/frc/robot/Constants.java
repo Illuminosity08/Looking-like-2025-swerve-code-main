@@ -19,4 +19,6 @@ public final class Constants {
 
 public static final double MAX_SPEED = 0;
 public static final int ELEVATOR_ID = 9;
+public static final int ELEVATORFOLLOWER_ID = 10;
+public static final double ELEVATOR_GEAR_RATIO = 100.0/1.0;
 }

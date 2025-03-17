@@ -8,9 +8,11 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 public class Intake extends SubsystemBase {
     private final SparkMax intakeMotor;
 
+    private boolean has_peice = false;
+
     // Motor Speeds
-    private static final double INTAKE_SPEED = 0.7;   // Adjust as needed
-    private static final double EJECT_SPEED = -0.7;  // Reverse direction for ejecting
+    private static final double INTAKE_SPEED = -0.6;   // Adjust as needed
+    private static final double EJECT_SPEED = 0.5;  // Reverse direction for ejecting
 
     public Intake(int motorPort) {
         intakeMotor = new SparkMax(motorPort, MotorType.kBrushless);
@@ -18,10 +20,20 @@ public class Intake extends SubsystemBase {
 
     public void intake() {
         intakeMotor.set(INTAKE_SPEED);
+        has_peice = true;
+    }
+
+    public void hold() {
+        if (has_peice) {    
+            intakeMotor.set(-0.5);
+        } else {   
+            intakeMotor.set(0);
+        }
     }
 
     public void eject() {
         intakeMotor.set(EJECT_SPEED);
+        has_peice = false;
     }
 
     public void stop() {

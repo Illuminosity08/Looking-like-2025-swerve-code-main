@@ -9,7 +9,6 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -20,6 +19,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 public class Elevator extends SubsystemBase {
     private final SparkMax elevatorMotor;
     private final SparkMaxConfig elevatorConfig = new SparkMaxConfig();
+    private final SparkMax elevatorFollower;
+    private final SparkMaxConfig elevatorFollowerConfig = new SparkMaxConfig();
     private final RelativeEncoder elevatorEncoder;
     private final PIDController pidController;
 
@@ -31,9 +32,15 @@ public class Elevator extends SubsystemBase {
 
     public Elevator() {
         elevatorMotor = new SparkMax(Constants.ELEVATOR_ID, MotorType.kBrushless);
+        elevatorFollower = new SparkMax(Constants.ELEVATORFOLLOWER_ID, MotorType.kBrushless);
         pidController = new PIDController(kP, kI, kD);
         elevatorEncoder = elevatorMotor.getEncoder();
         elevatorEncoder.setPosition(0);
+
+        elevatorFollowerConfig.smartCurrentLimit(40);  // Prevents burning out the motor
+        elevatorFollowerConfig.idleMode(IdleMode.kBrake);  // Holds position
+        elevatorFollowerConfig.follow(elevatorMotor, true);
+        elevatorFollower.configure(elevatorFollowerConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         elevatorConfig.smartCurrentLimit(40);  // Prevents burning out the motor
         elevatorConfig.idleMode(IdleMode.kBrake);  // Holds position
         elevatorMotor.configure(elevatorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -46,9 +53,9 @@ public class Elevator extends SubsystemBase {
         double currentHeight = elevatorEncoder.getPosition();  
 
         // Safety limits
-        if ((currentHeight >= MAX_HEIGHT && speed > 0) || (currentHeight <= MIN_HEIGHT && speed < 0)) {
-            speed = 0;  // Stop motor if at limits
-        }
+        // if ((currentHeight >= MAX_HEIGHT && speed > 0) || (currentHeight <= MIN_HEIGHT && speed < 0)) {
+        //     speed = 0;  // Stop motor if at limits
+        // }
 
         elevatorMotor.set(speed);
         SmartDashboard.putNumber("Elevator Height", currentHeight);

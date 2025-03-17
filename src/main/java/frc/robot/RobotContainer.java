@@ -5,16 +5,17 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Swerve;
+// import frc.robot.subsystems.Wrist;
+
+import static edu.wpi.first.units.Units.Degrees;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.events.EventTrigger;
-import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.wpilibj.DigitalInput;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -27,6 +28,9 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -41,31 +45,37 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    private final SendableChooser<Command> autoChooser;
+  private final SendableChooser<Command> autoChooser;
 
   // The robot's subsystems and commands are defined here...
   private final Swerve swerve = new Swerve();
-private final Elevator elevator = new Elevator();
-private final Intake intake = new Intake(5); // Change 5 to the actual CAN ID
-private final Joystick operatorJoystick = new Joystick(1);
+  private final Elevator elevator = new Elevator();
+  private final Intake intake = new Intake(11);
+  private final Joystick operatorJoystick = new Joystick(1);
+  // private final Wrist wrist = new Wrist(12);
+  private final Arm arm = new Arm(13);
 
   private final CommandXboxController m_driverController = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
   public RobotContainer() {
     new EventTrigger("run elevator").whileTrue(Commands.print("running elevator"));
-    new EventTrigger("drop coral").and(new Trigger(() -> elevator.getHeight() > 0.5)).onTrue(Commands.print("drop coral"));
+    new EventTrigger("drop coral").and(new Trigger(() -> elevator.getHeight() > 0.5))
+        .onTrue(Commands.print("drop coral"));
     NamedCommands.registerCommand("elevatorUp", new InstantCommand(() -> elevator.setElevatorPosition(1.0)));
-    NamedCommands.registerCommand("stopRobot", new InstantCommand(() -> swerve.drive(new ChassisSpeeds(0, 0, 0), false)));
+    NamedCommands.registerCommand("stopRobot",
+        new InstantCommand(() -> swerve.drive(new ChassisSpeeds(0, 0, 0), false)));
 
-        autoChooser = AutoBuilder.buildAutoChooser(); 
-       SmartDashboard.putData("Auto Chooser", autoChooser);
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();
     Command driveCommand = swerve.driveCommand(() -> -m_driverController.getLeftY(),
-    () -> -m_driverController.getLeftX(), () -> -m_driverController.getRightX());
+        () -> -m_driverController.getLeftX(), () -> -m_driverController.getRightX());
 
     swerve.setDefaultCommand(driveCommand);
+
+    intake.setDefaultCommand(new RunCommand(intake::hold, intake));
   }
 
   /**
@@ -84,20 +94,38 @@ private final Joystick operatorJoystick = new Joystick(1);
    * \[]
    */
   private void configureBindings() {
+
     JoystickButton presetLow = new JoystickButton(operatorJoystick, 2); // Button 2
     JoystickButton presetHigh = new JoystickButton(operatorJoystick, 3); // Button 3
     JoystickButton resetElevator = new JoystickButton(operatorJoystick, 4); // Button 4
     JoystickButton intakeButton = new JoystickButton(operatorJoystick, 5); // Button 5
-    JoystickButton ejectButton = new JoystickButton(operatorJoystick, 6);  // Button 6
+    JoystickButton ejectButton = new JoystickButton(operatorJoystick, 6); // Button 6
     JoystickButton stopIntakeButton = new JoystickButton(operatorJoystick, 7); // Button 7
     
-    intakeButton.whileTrue(new InstantCommand(intake::intake, intake));
-    ejectButton.whileTrue(new InstantCommand(intake::eject, intake));
-    stopIntakeButton.onTrue(new InstantCommand(intake::stop, intake));    
+    intakeButton.whileTrue(new RunCommand(intake::intake, intake));
+    ejectButton.whileTrue(new RunCommand(intake::eject, intake));
+    stopIntakeButton.onTrue(new InstantCommand(intake::stop, intake));
     presetLow.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(0.3))); // Move to 30 cm
-    presetHigh.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(1.2))); // Move to 120 cm
+    presetHigh.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(0.2))); // Move to 20 cm
     resetElevator.onTrue(new InstantCommand(() -> elevator.setElevatorPosition(0.0))); // Moves to base position
+    m_driverController.start()
+        .onTrue(new InstantCommand(() -> swerve.resetPose(new Pose2d(swerve.getPose().getTranslation(),
+            new Rotation2d(Degrees.of(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? 180 : 0))))));
 
+    elevator.setDefaultCommand(
+      new RunCommand(() -> elevator.setElevatorSpeed(operatorJoystick.getRawAxis(5)),
+      elevator));
+        // new RunCommand(() -> elevator.setElevatorSpeed(operatorJoystick.getRawAxis(2) - operatorJoystick.getRawAxis(3)),
+        //     elevator));
+
+    // wrist.setDefaultCommand(
+    // new RunCommand(() -> wrist.setPower(operatorJoystick.getRawAxis(1)),
+    // wrist));
+
+    arm.setDefaultCommand(
+        new RunCommand(() -> arm.setPower(operatorJoystick.getRawAxis(1) * 0.2), arm));
+
+    // arm.setDefaultCommand(new RunCommand(() -> arm.calculatePidPower(), arm));
 
 
     // Reset rotation to face away from driver statoin
@@ -117,17 +145,21 @@ private final Joystick operatorJoystick = new Joystick(1);
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    
-    Command selectedAuto = autoChooser.getSelected();  // Get selected auto mode from SmartDashboard
 
-    if (selectedAuto != null) {
-        return selectedAuto;  // Run selected auto command
-    } else {
-        DriverStation.reportError("No auto mode selected!", false);
-        return Commands.none();  // Failsafe to prevent crashes
-    }
-  }}
+    // An example command will be run in autonomous
+    // return Commands.run(() -> {
+    // swerve.drive(new Translation2d(-0.4,0), 0.0, false);
+    // }, swerve).withTimeout(2);
+    // return Commands.sequence(
+    //     new RunCommand(() -> swerve.drive(new ChassisSpeeds(-0.4, 0, 0), false)).raceWith(Commands.waitSeconds(2)),
+    //     new InstantCommand(() -> swerve.drive(new ChassisSpeeds(0, 0, 0), false)));
 
-
-  
-    
+    return new ParallelDeadlineGroup(new WaitCommand(4), swerve.driveCommand(() -> -0.5,
+    () -> 0, () -> 0));
+  }
+}//
+ // if (selectedAut o != null) {
+ // return selectedAuto; // Run selected auto command
+ // } else {
+ // DriverStation.reportError("No auto mode selected!", false);
+ // return Commands.none(); // Failsafe to prevent crashes
