@@ -8,6 +8,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Lift;
 import frc.robot.subsystems.Swerve;
 // import frc.robot.subsystems.Wrist;
 
@@ -54,6 +55,8 @@ public class RobotContainer {
   private final Joystick operatorJoystick = new Joystick(1);
   // private final Wrist wrist = new Wrist(12);
   private final Arm arm = new Arm(13);
+  private final Lift lift = new Lift(14);
+
 
   private final CommandXboxController m_driverController = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
@@ -115,15 +118,16 @@ public class RobotContainer {
     elevator.setDefaultCommand(
       new RunCommand(() -> elevator.setElevatorSpeed(operatorJoystick.getRawAxis(5)),
       elevator));
-        // new RunCommand(() -> elevator.setElevatorSpeed(operatorJoystick.getRawAxis(2) - operatorJoystick.getRawAxis(3)),
-        //     elevator));
-
-    // wrist.setDefaultCommand(
-    // new RunCommand(() -> wrist.setPower(operatorJoystick.getRawAxis(1)),
-    // wrist));
+     
+ 
 
     arm.setDefaultCommand(
         new RunCommand(() -> arm.setPower(operatorJoystick.getRawAxis(1) * 0.2), arm));
+
+        lift.setDefaultCommand(
+          new RunCommand(() -> lift.setPower(m_driverController.getLeftTriggerAxis()* 0.2), lift));
+          new RunCommand(() -> lift.setPower(m_driverController.getRightTriggerAxis()* -0.2), lift);
+
 
     // arm.setDefaultCommand(new RunCommand(() -> arm.calculatePidPower(), arm));
 
@@ -154,7 +158,7 @@ public class RobotContainer {
     //     new RunCommand(() -> swerve.drive(new ChassisSpeeds(-0.4, 0, 0), false)).raceWith(Commands.waitSeconds(2)),
     //     new InstantCommand(() -> swerve.drive(new ChassisSpeeds(0, 0, 0), false)));
 
-    return new ParallelDeadlineGroup(new WaitCommand(4), swerve.driveCommand(() -> -0.5,
+    return new ParallelDeadlineGroup(new WaitCommand(4), swerve.driveCommand(() -> -1,
     () -> 0, () -> 0));
   }
 }//
