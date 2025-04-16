@@ -16,6 +16,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -88,6 +91,7 @@ public class Swerve extends SubsystemBase {
 
   @Override
   public void periodic() {
+    swerveDrive.updateOdometry();
     // This method will be called once per scheduler run
     swerveDrive.field.setRobotPose(getPose());
   }
@@ -139,5 +143,40 @@ public class Swerve extends SubsystemBase {
       // driveFieldRelative(ChassisSpeeds.fromRobotRelativeSpeeds(chassisSpeeds, swerveDrive.getGyro().getRotation3d().toRotation2d()));
     });
   }
+
+  public Command driveFieldRelativeCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX, DoubleSupplier rotationOffset) {
+     return run(() -> {
+        Translation2d translationCubed = SwerveMath
+            .cubeTranslation(new Translation2d(translationX.getAsDouble(), translationY.getAsDouble()));
+        translationCubed = translationCubed.times(swerveDrive.getMaximumChassisVelocity());
+
+        double rotation = Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumChassisAngularVelocity();
+
+        SmartDashboard.putNumber("DriveCommand/rot", rotation);
+        SmartDashboard.putNumber("DriveCommand/translationX", translationX.getAsDouble());
+        SmartDashboard.putNumber("DriveCommand/translationY", translationY.getAsDouble());
+        SmartDashboard.putNumber("DriveCommand/rotationOffset", rotationOffset.getAsDouble());
+
+        // double x = translationCubed.getX();
+        // double y = translationCubed.getY();
+        // double r = rotationOffset.getAsDouble();
+
+        // double dxx = x * Math.cos(r);
+        // double dxy = y * Math.cos(r);
+
+        // double dyy = y * Math.cos(r);
+        // double dyx = x * Math.cos(r);
+
+        // double dx = MathMath.pow(dxx, 2);
+
+        // // double dx = Math.copySign(Math.sqrt(Math.copySign(Math.pow(translationCubed.getX() * Math.cos(rotationOffset.getAsDouble()), 2), translationCubed.getX() * Math.cos(rotationOffset.getAsDouble())) + Math.copySign(Math.pow(translationCubed.getX() * Math.cos(rotationOffset.getAsDouble()), 2), translationCubed.getX() * Math.cos(rotationOffset.getAsDouble()))), Math.copySign(Math.pow(translationCubed.getX() * Math.cos(rotationOffset.getAsDouble()), 2), translationCubed.getX() * Math.cos(rotationOffset.getAsDouble())) + Math.copySign(Math.pow(translationCubed.getX() * Math.cos(rotationOffset.getAsDouble()), 2), translationCubed.getX() * Math.cos(rotationOffset.getAsDouble())));
+        // double dy = Math.sqrt(Math.pow(translationCubed.getY() * Math.cos(rotationOffset.getAsDouble()), 2) + Math.pow(translationCubed.getX() * Math.sin(rotationOffset.getAsDouble()), 2));
+
+        ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(new ChassisSpeeds(translationCubed.getX(), translationCubed.getY(), rotation), new Rotation2d(rotationOffset.getAsDouble()));
+        drive(chassisSpeeds, false);
+      // driveFieldRelative(ChassisSpeeds.fromRobotRelativeSpeeds(chassisSpeeds, swerveDrive.getGyro().getRotation3d().toRotation2d()));
+    
+       });
+}
 
 }

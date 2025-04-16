@@ -8,7 +8,6 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Lift;
 import frc.robot.subsystems.Swerve;
 // import frc.robot.subsystems.Wrist;
 
@@ -17,10 +16,13 @@ import static edu.wpi.first.units.Units.Degrees;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.events.EventTrigger;
+import com.studica.frc.AHRS;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -35,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.cameraserver.CameraServer;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -55,13 +58,13 @@ public class RobotContainer {
   private final Joystick operatorJoystick = new Joystick(1);
   // private final Wrist wrist = new Wrist(12);
   private final Arm arm = new Arm(13);
-  private final Lift lift = new Lift(14);
-
 
   private final CommandXboxController m_driverController = new CommandXboxController(
       OperatorConstants.kDriverControllerPort);
 
   public RobotContainer() {
+    CameraServer.startAutomaticCapture();
+
     new EventTrigger("run elevator").whileTrue(Commands.print("running elevator"));
     new EventTrigger("drop coral").and(new Trigger(() -> elevator.getHeight() > 0.5))
         .onTrue(Commands.print("drop coral"));
@@ -73,12 +76,14 @@ public class RobotContainer {
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();
-    Command driveCommand = swerve.driveCommand(() -> -m_driverController.getLeftY(),
-        () -> -m_driverController.getLeftX(), () -> -m_driverController.getRightX());
+    // Command driveCommand = swerve.driveCommand(() -> -m_driverController.getLeftY(),
+    //     () -> -m_driverController.getLeftX(), () -> -m_driverController.getRightX());
+
+    Command driveCommand = swerve.driveFieldRelativeCommand(() -> -m_driverController.getLeftY(),
+        () -> -m_driverController.getLeftX(), () -> -m_driverController.getRightX(), () -> (swerve.getPose().getRotation().getRadians()));
 
     swerve.setDefaultCommand(driveCommand);
 
-    intake.setDefaultCommand(new RunCommand(intake::hold, intake));
   }
 
   /**
@@ -124,9 +129,9 @@ public class RobotContainer {
     arm.setDefaultCommand(
         new RunCommand(() -> arm.setPower(operatorJoystick.getRawAxis(1) * 0.2), arm));
 
-        lift.setDefaultCommand(
-          new RunCommand(() -> lift.setPower(m_driverController.getLeftTriggerAxis()* 0.2), lift));
-          new RunCommand(() -> lift.setPower(m_driverController.getRightTriggerAxis()* -0.2), lift);
+        // lift.setDefaultCommand(
+        //   new RunCommand(() -> lift.setPower(m_driverController.getLeftTriggerAxis()* 0.2), lift).alongWith(
+        //   new RunCommand(() -> lift.setPower(m_driverController.getRightTriggerAxis()* -0.2), lift)));
 
 
     // arm.setDefaultCommand(new RunCommand(() -> arm.calculatePidPower(), arm));
@@ -158,7 +163,7 @@ public class RobotContainer {
     //     new RunCommand(() -> swerve.drive(new ChassisSpeeds(-0.4, 0, 0), false)).raceWith(Commands.waitSeconds(2)),
     //     new InstantCommand(() -> swerve.drive(new ChassisSpeeds(0, 0, 0), false)));
 
-    return new ParallelDeadlineGroup(new WaitCommand(4), swerve.driveCommand(() -> -1,
+    return new ParallelDeadlineGroup(new WaitCommand(1), swerve.driveCommand(() -> -1,
     () -> 0, () -> 0));
   }
 }//

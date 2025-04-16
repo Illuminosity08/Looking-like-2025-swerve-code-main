@@ -20,20 +20,11 @@ public class Intake extends SubsystemBase {
 
     public void intake() {
         intakeMotor.set(INTAKE_SPEED);
-        has_peice = true;
     }
 
-    public void hold() {
-        if (has_peice) {    
-            intakeMotor.set(-0.5);
-        } else {   
-            intakeMotor.set(0);
-        }
-    }
 
     public void eject() {
         intakeMotor.set(EJECT_SPEED);
-        has_peice = false;
     }
 
     public void stop() {
