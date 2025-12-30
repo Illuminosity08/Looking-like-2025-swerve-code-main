@@ -84,6 +84,9 @@ public class RobotContainer {
 
     swerve.setDefaultCommand(driveCommand);
 
+    var autoChooser = AutoBuilder.buildAutoChooser();
+
+
   }
 
   /**
@@ -163,8 +166,9 @@ public class RobotContainer {
     //     new RunCommand(() -> swerve.drive(new ChassisSpeeds(-0.4, 0, 0), false)).raceWith(Commands.waitSeconds(2)),
     //     new InstantCommand(() -> swerve.drive(new ChassisSpeeds(0, 0, 0), false)));
 
-    return new ParallelDeadlineGroup(new WaitCommand(1), swerve.driveCommand(() -> -1,
-    () -> 0, () -> 0));
+    return autoChooser.getSelected();
+  //   return new ParallelDeadlineGroup(new WaitCommand(1), swerve.driveCommand(() -> -1,
+  //   () -> 0, () -> 0));
   }
 }//
  // if (selectedAut o != null) {
