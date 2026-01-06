@@ -15,6 +15,7 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
 import com.studica.frc.AHRS;
 
@@ -166,7 +167,7 @@ public class RobotContainer {
     //     new RunCommand(() -> swerve.drive(new ChassisSpeeds(-0.4, 0, 0), false)).raceWith(Commands.waitSeconds(2)),
     //     new InstantCommand(() -> swerve.drive(new ChassisSpeeds(0, 0, 0), false)));
 
-    return autoChooser.getSelected();
+    return new PathPlannerAuto("test");
   //   return new ParallelDeadlineGroup(new WaitCommand(1), swerve.driveCommand(() -> -1,
   //   () -> 0, () -> 0));
   }

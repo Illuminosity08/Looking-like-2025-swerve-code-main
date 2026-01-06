@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -33,9 +34,10 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 import swervelib.telemetry.SwerveDriveTelemetry;
 
 public class Swerve extends SubsystemBase {
-  double maximumSpeed = Units.feetToMeters(8);
+  double maximumSpeed = Units.feetToMeters(2);
   File directory = new File(Filesystem.getDeployDirectory(), "swerve");
   SwerveDrive swerveDrive;
+  Field2d newField = new Field2d();
 
   /** Creates a new ExampleSubsystem. */
   public Swerve() {
@@ -58,7 +60,8 @@ public class Swerve extends SubsystemBase {
                                                         // feedforwards
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic
                                         // drive trains
-            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+            new PIDConstants(0.10, 0.0, 0.0
+            ), // Translation PID constants
             new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
         ),
         config, // The robot configuration
@@ -94,6 +97,8 @@ public class Swerve extends SubsystemBase {
     swerveDrive.updateOdometry();
     // This method will be called once per scheduler run
     swerveDrive.field.setRobotPose(getPose());
+    newField.setRobotPose(getPose());
+    SmartDashboard.putData("awdawd", newField);
   }
 
   @Override
