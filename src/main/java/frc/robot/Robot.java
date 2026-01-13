@@ -10,6 +10,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.net.PortForwarder;
+
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -31,8 +34,32 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    
   }
 
+  public Robot() {
+    // ... your existing init code ...
+  
+    // Limelight 3A is on USB, internally at 172.29.0.1
+    // This forwards roboRIO:5801 → Limelight3A:5801 (web UI)
+    // and roboRIO:5800 → Limelight3A:5800 (video stream)
+    PortForwarder.add(5801, "172.29.0.1", 5801);
+    PortForwarder.add(5800, "172.29.0.1", 5800);
+   
+    // Candidate B: 172.29.1.1
+    PortForwarder.add(5810, "172.29.1.1", 5800);
+    PortForwarder.add(5811, "172.29.1.1", 5801);
+  
+    // Candidate C: 172.29.2.1
+    PortForwarder.add(5820, "172.29.2.1", 5800);
+    PortForwarder.add(5821, "172.29.2.1", 5801);
+  
+    // Candidate D: 172.29.3.1
+    PortForwarder.add(5830, "172.29.3.1", 5800);
+    PortForwarder.add(5831, "172.29.3.1", 5801);
+    
+  }
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
